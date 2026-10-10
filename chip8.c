@@ -1,17 +1,24 @@
 #include <stdio.h>
 #include <stdint.h>
 
+//define constants
+#define MEMORY_SIZE 4096 
+#define REGISTER_COUNT 16 
+#define STACK_SIZE 16 
+#define DISPLAY_WIDTH 64
+#define DISPLAY_HEIGHT 32
+
 //create struct for chip8 state (memory suff)
 typedef struct chip_8 {
-  uint8_t memory[4096];//4 kilobytes
-  uint8_t V[16];//general purpose vars 
+  uint8_t memory[MEMORY_SIZE];//4 kilobytes
+  uint8_t V[REGISTER_COUNT];//general purpose vars 
   uint16_t I;//used to point a locations in memory
   uint16_t PC;//program counter
-  uint16_t stack[16];
+  uint16_t stack[STACK_SIZE];
   uint8_t sp;//stack pointer 
   uint8_t dt;//delay timer
   uint8_t st;//sound timer
-  uint8_t display[64][32];
+  uint8_t display[DISPLAY_WIDTH][DISPLAY_HEIGHT];
 } Chip8;
 
 /*
@@ -55,5 +62,81 @@ void chip8_reset(){
   memory[0x67] = 0x10;
   memory[0x68] = 0x10; 
 
+  //load 5
+  memory[0x69] = 0xF0;
+  memory[0x6A] = 0x80;
+  memory[0x6B] = 0xF0;
+  memory[0x6C] = 0x10;
+  memory[0x6D] = 0xF0;
+
+  //load 6
+  memory[0x6E] = 0xF0;
+  memory[0x6F] = 0x80;
+  memory[0x70] = 0xF0;
+  memory[0x71] = 0x90;
+  memory[0x72] = 0xF0;
+
+  //load 7 
+  memory[0x73] = 0xF0;
+  memory[0x74] = 0x10;
+  memory[0x75] = 0x20;
+  memory[0x76] = 0x40;
+  memory[0x77] = 0x40;
+
+  //load 8
+  memory[0x78] = 0xF0;
+  memory[0x79] = 0x90;
+  memory[0x7A] = 0xF0;
+  memory[0x7B] = 0x90;
+  memory[0x7C] = 0xF0;
+
+  //load 9
+  memory[0x7D] = 0xF0;
+  memory[0x7E] = 0x90;
+  memory[0x7F] = 0xF0;
+  memory[0x80] = 0x10;
+  memory[0x81] = 0xF0;
+
+  //load A
+  memory[0x82] = 0xF0;
+  memory[0x83] = 0x90;
+  memory[0x84] = 0xF0;
+  memory[0x85] = 0x90;
+  memory[0x86] = 0x90;
+
+  //load B
+  memory[0x87] = 0xE0;
+  memory[0x88] = 0x90;
+  memory[0x89] = 0xE0;
+  memory[0x8A] = 0x90;
+  memory[0x8B] = 0xE0;
+
+  //load C
+  memory[0x8C] = 0xF0;
+  memory[0x8D] = 0x80;
+  memory[0x8E] = 0x80;
+  memory[0x8F] = 0x80;
+  memory[0x90] = 0xF0;
+
+  //load D
+  memory[0x91] = 0xE0;
+  memory[0x92] = 0x90;
+  memory[0x93] = 0x90;
+  memory[0x94] = 0x90;
+  memory[0x95] = 0xE0;
+
+  //load E
+  memory[0x96] = 0xF0;
+  memory[0x97] = 0x80;
+  memory[0x98] = 0xF0;
+  memory[0x99] = 0x80;
+  memory[0x9A] = 0xF0;
+
+  //load F
+  memory[0x9B] = 0xF0;
+  memory[0x9C] = 0x80;
+  memory[0x9D] = 0xF0;
+  memory[0x9E] = 0x80;
+  memory[0x9F] = 0x80; 
   
 }
