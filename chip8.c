@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <err.h>
 
 //define constants
 #define MEMORY_SIZE 4096 
@@ -8,6 +9,7 @@
 #define STACK_SIZE 16 
 #define DISPLAY_WIDTH 64
 #define DISPLAY_HEIGHT 32
+#define PROGRAM_START_ADDRESS 0x200
 
 //create struct for chip8 state (memory suff)
 typedef struct chip_8 {
@@ -36,8 +38,8 @@ void chip8_reset(Chip8 *chip){
   //inizalize program counter
   chip->pc = 0;
 
-  //inizalize stack pointer
-  chip->sp = 0;
+  //inizalize stack pointer, chip8 starts reading program at memory address 0x200
+  chip->sp = PROGRAM_START_ADDRESS;
 
   //inizalize delay timer
   chip->dt = 0;
@@ -169,4 +171,17 @@ void chip8_reset(Chip8 *chip){
   chip->memory[0x9E] = 0x80;
   chip->memory[0x9F] = 0x80; 
   
+}
+
+void chip8_load_ROM(Chip8 chip char* filename){
+
+  //set stack pointer at start just in case its not already there (it should be)
+  chip->sp = PROGRAM_START_ADDRESS;
+
+  //open ROM file
+  FILE* rom_file = fopen(filename, "rb");//need open in "rb" to open in "binary mode"
+  if (rom_file == NULL){
+    perror(filename);
+    errx(EXIT_FAILURE, "Failed to open ROM file");
+  }
 }
