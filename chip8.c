@@ -60,6 +60,7 @@ void chip8_reset(Chip8 *chip){
   //inizalize display, gonna do all zeros for now this might change
   memset(chip->display, 0, sizeof(chip->display));
 
+  //load font, this took forever...
   //load 0
   chip->memory[0x50] = 0xF0;
   chip->memory[0x51] = 0x90;
@@ -204,6 +205,13 @@ void chip8_load_ROM(Chip8 *chip, char *filename){
   fclose(rom_file);
 }
 
+/*
+ * Gets the current instruction for the program in memory, aka wherever pc is pointed to.
+ *
+ * chip: a struct of representing the state of the chip.
+ *
+ * RETURNS: a hex representing the opcode for the current instruction.
+ */ 
 uint16_t fetch(Chip8 *chip){
   
   //get 2 byte of current instruction (whererever pc is pointing)
@@ -211,6 +219,70 @@ uint16_t fetch(Chip8 *chip){
   chip->pc += 2;
 
   return opcode;
+}
+
+void execute(Chip8 *chip, uint16_t opcode){
+  
+  uint8_t first_nibble;
+  uint8_t X;
+  uint8_t Y;
+  uint8_t N;
+  uint8_t NN;
+  uint16_t NNN;
+
+  //first nibble, tells kind of instruction
+  first_nibble = (opcode & 0xF000) >> 12;
+
+  //second nibble, look up register
+  X = (opcode & 0x0F00) >> 8;
+
+  //third nibble, look up reister
+  Y = (opcode & 0x00F0) >> 4; 
+
+  //the fourth nibble, 4 bit number
+  N = (opcode & 0x000F);
+
+  //second byte (third + fourth nibbles), 8 bit number
+  NN = (opcode & 0x00FF);
+
+  //the second, third and fourth nibbles, 12 bit memory address
+  NNN = (opcode & 0x0FFF);
+
+  //figure out what kind of instruction it is based on first nibble
+  switch(first_nibble){
+    case 0x0:
+      if (opcode == 0x00E0){
+        //clear screen, dont have the screen yet so cant do this
+        printf("clear screen\n");
+        break;
+      } else {
+        printf("not IMPLEMENTED YET: %04X\n", opcode);
+      }
+     
+    case 0x1:
+      //jump
+      chip->pc = NNN;
+      break;
+
+    case 0x6:
+      //set register
+      chip->V[X] = NN;
+      break;
+
+    case 0x7:
+      //add to register
+      chip->V[X] += NN;
+      break;
+
+    case 0xA:
+      //set I
+      chip->I = NNN;
+      break;
+
+    default:
+      printf("HAVE NOT WRITTEN THIS CODE YET: %04X\n", opcode);
+      break;
+  }
 }
 
 
@@ -228,10 +300,18 @@ int main(){
 
   //print the first few bytes of the program to test if it loaded in
   for (int i = 0; i < 10; i++){
-    printf("current instruction: %04X\n", fetch(&chip));
+    //printf("current instruction: %04X\n", fetch(&chip));
     //printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
+    
+    uint16_t opcode = fetch(&chip);
+    execute(&chip, opcode);
   }
+  printf("I: %0x\n", chip.I);
+  printf("PC: %0x\n", chip.pc);
+  
 
+
+  return EXIT_SUCCESS;
 }
 
 
