@@ -203,3 +203,26 @@ void chip8_load_ROM(Chip8 *chip, char *filename){
   //close ROM file
   fclose(rom_file);
 }
+
+
+int main(){
+
+
+  //testing rom load
+  Chip8 chip;
+
+  //reset chip
+  chip8_reset(&chip);
+
+  //load ROM file into memory
+  chip8_load_ROM(&chip, "2-ibm-logo.ch8");
+
+  //print the first few bytes of the program to test if it loaded in
+  for (int i = 0; i < 10; i++){
+    printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
+  }
+
+}
+
+
+
