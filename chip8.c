@@ -204,6 +204,15 @@ void chip8_load_ROM(Chip8 *chip, char *filename){
   fclose(rom_file);
 }
 
+uint16_t fetch(Chip8 *chip){
+  
+  //get 2 byte of current instruction (whererever pc is pointing)
+  uint16_t opcode = ((uint16_t)chip->memory[chip->pc] << 8) | chip->memory[chip->pc + 1];
+  chip->pc += 2;
+
+  return opcode;
+}
+
 
 int main(){
 
@@ -219,7 +228,8 @@ int main(){
 
   //print the first few bytes of the program to test if it loaded in
   for (int i = 0; i < 10; i++){
-    printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
+    printf("current instruction: %04X\n", fetch(&chip));
+    //printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
   }
 
 }
