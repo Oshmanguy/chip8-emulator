@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <err.h>
@@ -36,10 +37,10 @@ void chip8_reset(Chip8 *chip){
   chip->I = 0;
 
   //inizalize program counter
-  chip->pc = 0;
+  chip->pc = PROGRAM_START_ADDRESS;
 
   //inizalize stack pointer, chip8 starts reading program at memory address 0x200
-  chip->sp = PROGRAM_START_ADDRESS;
+  chip->sp = 0;
 
   //inizalize delay timer
   chip->dt = 0;
@@ -54,10 +55,10 @@ void chip8_reset(Chip8 *chip){
   memset(chip->memory, 0, MEMORY_SIZE);
 
   //inizalize stack
-  memset(chip->stack, 0, STACK_SIZE, STACK_SIZE * sizeof(uint16_t));//32bytes total
+  memset(chip->stack, 0, STACK_SIZE * sizeof(uint16_t));//32bytes total
 
   //inizalize display, gonna do all zeros for now this might change
-  memset(chip->display, 0, size0f(chip->display));
+  memset(chip->display, 0, sizeof(chip->display));
 
   //load 0
   chip->memory[0x50] = 0xF0;
@@ -173,15 +174,32 @@ void chip8_reset(Chip8 *chip){
   
 }
 
-void chip8_load_ROM(Chip8 chip char* filename){
-
-  //set stack pointer at start just in case its not already there (it should be)
-  chip->sp = PROGRAM_START_ADDRESS;
-
+/*
+ * Loads a ROM file (binary file) into memory so that it is ready to be run.
+ *
+ * chip: a struct of type Chip8 which represents the state of the chip.
+ * filename: a String representing the name of the ROM file we want to run.
+ *
+ */
+void chip8_load_ROM(Chip8 *chip, char *filename){
+ 
   //open ROM file
   FILE* rom_file = fopen(filename, "rb");//need open in "rb" to open in "binary mode"
   if (rom_file == NULL){
     perror(filename);
     errx(EXIT_FAILURE, "Failed to open ROM file");
   }
+
+  //get size of ROM file
+  fseek(rom_file, 0, SEEK_END);//go to end
+  long ROM_size = ftell(rom_file);
+  fseek(rom_file, 0, SEEK_SET);//go to start 
+
+  //read binary file and save to memory from 0x200 and onwards
+  if (fread(&chip->memory[PROGRAM_START_ADDRESS], sizeof(uint8_t), ROM_size, rom_file) != (size_t)ROM_size){
+    errx(EXIT_FAILURE, "ROM file did not get loaded into memory.");
+  }
+
+  //close ROM file
+  fclose(rom_file);
 }
