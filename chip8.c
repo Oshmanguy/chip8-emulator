@@ -233,26 +233,30 @@ void draw_sprite(Chip8 *chip, uint8_t X, uint8_t Y, uint8_t N){
   //pixels in row
   for (int row = 0; row < N; row++){
     int screen_y_position = y_coord + row;
+    
+    //check if we are off the screen 
     if (screen_y_position >= 32){
       break;
     }
   
-
+    //get current row byte from memory 
     uint8_t sprite_byte = chip->memory[chip->I + row];
 
     //pixels in col
     for (int col = 0; col < 8; col++){
       int screen_x_position = x_coord + col;
-
+      
+      //check if we are off the screen 
       if (screen_x_position >= 64){
         break;
       }
 
+      //check to see if the pixel is filled in 
       if (sprite_byte & (0x80 >> col)){
         if (chip->display[screen_x_position][screen_y_position] == 1){
           chip->V[0xF] = 1;
         }
-        chip->display[screen_x_position][screen_y_position] ^= 1;//XOR flip
+        chip->display[screen_x_position][screen_y_position] ^= 1;//XOR flip, if pixel is empty now it is filled ans same other way around 
       }
     }
   }
