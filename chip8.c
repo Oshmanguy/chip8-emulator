@@ -221,6 +221,45 @@ uint16_t fetch(Chip8 *chip){
   return opcode;
 }
 
+void draw_sprite(Chip8 *chip, uint8_t X, uint8_t Y, uint8_t N){
+
+  //set X coordinate and Y coordinate
+  int x_coord = chip->V[X] % 64;
+  int y_coord = chip->V[Y] % 32;
+
+  //set VF to 0
+  chip->V[0xF] = 0; 
+
+  //pixels in row
+  for (int row = 0; row < N; row++){
+    int screen_y_position = y_coord + row;
+    if (screen_y_position >= 32){
+      break;
+    }
+  
+
+    uint8_t sprite_byte = chip->memory[chip->I + row];
+
+    //pixels in col
+    for (int col = 0; col < 8; col++){
+      int screen_x_position = x_coord + col;
+
+      if (screen_x_position >= 64){
+        break;
+      }
+
+      if (sprite_byte & (0x80 >> col)){
+        if (chip->display[screen_x_position][screen_y_position] == 1){
+          chip->V[0xF] = 1;
+        }
+        chip->display[screen_x_position][screen_y_position] ^= 1;//XOR flip
+      }
+    }
+  }
+}
+
+
+
 void execute(Chip8 *chip, uint16_t opcode){
   
   uint8_t first_nibble;
@@ -253,7 +292,7 @@ void execute(Chip8 *chip, uint16_t opcode){
     case 0x0:
       if (opcode == 0x00E0){
         //clear screen, dont have the screen yet so cant do this
-        printf("clear screen\n");
+        memset(chip->display, 0, sizeof(chip->display));
         break;
       } else {
         printf("not IMPLEMENTED YET: %04X\n", opcode);
@@ -278,6 +317,10 @@ void execute(Chip8 *chip, uint16_t opcode){
       //set I
       chip->I = NNN;
       break;
+    case 0xD:
+      //draw sprite
+      draw_sprite(chip, X, Y, N);
+      break;
 
     default:
       printf("HAVE NOT WRITTEN THIS CODE YET: %04X\n", opcode);
@@ -285,6 +328,18 @@ void execute(Chip8 *chip, uint16_t opcode){
   }
 }
 
+void print_display(Chip8 *chip){
+  for (int y = 0; y < DISPLAY_HEIGHT; y++){        // one text line per screen row
+    for (int x = 0; x < DISPLAY_WIDTH; x++){       // one character per pixel
+      if (chip->display[x][y] == 1){
+        printf("#");
+      } else {
+        printf(" ");
+      }
+    }
+    printf("\n");                                  // end of this row
+  }
+}
 
 int main(){
 
@@ -299,16 +354,16 @@ int main(){
   chip8_load_ROM(&chip, "2-ibm-logo.ch8");
 
   //print the first few bytes of the program to test if it loaded in
-  for (int i = 0; i < 10; i++){
+  for (int i = 0; i < 600; i++){
     //printf("current instruction: %04X\n", fetch(&chip));
     //printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
     
     uint16_t opcode = fetch(&chip);
     execute(&chip, opcode);
   }
-  printf("I: %0x\n", chip.I);
-  printf("PC: %0x\n", chip.pc);
-  
+  //printf("I: %0x\n", chip.I);
+  //DISPLAY_HEIGHTrintf("PC: %0x\n", chip.pc);
+  print_display(&chip); 
 
 
   return EXIT_SUCCESS;
