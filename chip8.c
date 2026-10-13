@@ -297,7 +297,6 @@ void execute(Chip8 *chip, uint16_t opcode){
       if (opcode == 0x00E0){
         //clear screen, dont have the screen yet so cant do this
         memset(chip->display, 0, sizeof(chip->display));
-        break;
       } 
       else if (opcode == 0x00EE){
           //return from subroutine
@@ -306,6 +305,7 @@ void execute(Chip8 *chip, uint16_t opcode){
           //pop value from stack
           chip->stack[chip->sp] = 0;
       }
+      break;
      
     case 0x1:
       //jump
@@ -352,13 +352,24 @@ void execute(Chip8 *chip, uint16_t opcode){
       chip->V[X] += NN;
       break;
 
+    case 0x8:
+      if (N == 0x0){
+        chip->V[X] = chip->V[Y];
+      } else if (N == 0x1){
+        chip->V[X] = chip->V[X] | chip->V[Y];
+      } else if (N == 0x2){
+        chip->V[X] = chip->V[X] & chip->V[Y];
+      } else if (N == 0x3){
+        chip->V[X] = chip->V[X] ^ chip->V[Y];
+      }//TODO: implement the rest of these codes
+      break;
+
     case 0x9:
       //skip conditionally
       if (chip->V[X] != chip->V[Y]){
         chip->pc += 2;
       }
       break;
-
 
     case 0xA:
       //set I
@@ -401,17 +412,17 @@ int main(){
   chip8_load_ROM(&chip, "3-corax+.ch8");
 
   //print the first few bytes of the program to test if it loaded in
-  for (int i = 0; i < 600; i++){
+  for (int i = 0; i < 5000; i++){
     //printf("current instruction: %04X\n", fetch(&chip));
     //printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
     
     uint16_t opcode = fetch(&chip);
-    printf("%04X\n", opcode);
+    //printf("%04X\n", opcode);
     execute(&chip, opcode);
   }
   //printf("I: %0x\n", chip.I);
   //DISPLAY_HEIGHTrintf("PC: %0x\n", chip.pc);
-  //print_display(&chip); 
+  print_display(&chip); 
 
 
   return EXIT_SUCCESS;
