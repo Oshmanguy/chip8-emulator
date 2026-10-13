@@ -298,13 +298,48 @@ void execute(Chip8 *chip, uint16_t opcode){
         //clear screen, dont have the screen yet so cant do this
         memset(chip->display, 0, sizeof(chip->display));
         break;
-      } else {
-        printf("not IMPLEMENTED YET: %04X\n", opcode);
+      } 
+      else if (opcode == 0x00EE){
+          //return from subroutine
+          chip->sp--;
+          chip->pc = chip->stack[chip->sp];
+          //pop value from stack
+          chip->stack[chip->sp] = 0;
       }
      
     case 0x1:
       //jump
       chip->pc = NNN;
+      break;
+
+    case 0x2:
+      //subroutines
+      //push pc to stack
+      chip->stack[chip->sp] = chip->pc;
+      chip->sp++;
+      //set pc to NNN 
+      chip->pc = NNN;
+
+    case 0x3:
+      //skip conditionally
+      if (chip->V[X] == NN){
+        chip->pc += 2;
+      }
+      break;
+
+    case 0x4:
+      //skip conditionally
+      if (chip->V[X] != NN){
+        chip->pc += 2;
+      
+      }
+      break;
+
+    case 0x5:
+      //skip conditionally
+      if (chip->V[X] == chip->V[Y]){
+        chip->pc += 2;
+      }
       break;
 
     case 0x6:
@@ -316,6 +351,14 @@ void execute(Chip8 *chip, uint16_t opcode){
       //add to register
       chip->V[X] += NN;
       break;
+
+    case 0x9:
+      //skip conditionally
+      if (chip->V[X] != chip->V[Y]){
+        chip->pc += 2;
+      }
+      break;
+
 
     case 0xA:
       //set I
@@ -355,7 +398,7 @@ int main(){
   chip8_reset(&chip);
 
   //load ROM file into memory
-  chip8_load_ROM(&chip, "2-ibm-logo.ch8");
+  chip8_load_ROM(&chip, "3-corax+.ch8");
 
   //print the first few bytes of the program to test if it loaded in
   for (int i = 0; i < 600; i++){
@@ -363,11 +406,12 @@ int main(){
     //printf("byte %d: %02X\n", i, chip.memory[PROGRAM_START_ADDRESS + i]);
     
     uint16_t opcode = fetch(&chip);
+    printf("%04X\n", opcode);
     execute(&chip, opcode);
   }
   //printf("I: %0x\n", chip.I);
   //DISPLAY_HEIGHTrintf("PC: %0x\n", chip.pc);
-  print_display(&chip); 
+  //print_display(&chip); 
 
 
   return EXIT_SUCCESS;
